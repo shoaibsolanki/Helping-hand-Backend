@@ -55,6 +55,22 @@ const UserSchema = new Schema({
     Wallet_amount:{
         type: String,
         default: 0,
+    },
+    Parent_id: {
+        type: String
+    },
+    Grandparent_id: {
+        type: String
+    },
+    role:{
+        type:String,
+        enum:['user','Admin',"Agent"],
+        required:true,
+        default:'user'
+    },
+    level:{
+        type:String,
+        default:'1'
     }
     // otp:{
     //     type:String

@@ -4,6 +4,7 @@ const jwt = require("jsonwebtoken");
 const JWT_SECRET = "Shoaib@7357";
 const Account = require("../models/AccountDetail");
 const Joi = require('joi');
+const Transcation = require("../models/Transcation");
 
 const getTeamHierarchy = async (sponsorId, level, result, levelCounts) => {
   const members = await User.find({ Sponsor_id: sponsorId }).exec();
@@ -130,6 +131,8 @@ class UserController {
       const salt = await bcrypt.genSalt(10);
       const secPass = await bcrypt.hash(req.body.password, salt);
       //creat a new use
+      const Parent_id = Sponsor_id;
+      const Grandparent_id = Sponsor?.Sponsor_id;
 
       user = await User.create({
         user_id: userId,
@@ -142,7 +145,21 @@ class UserController {
         Sponsor_Name: Sponsor.name,
         password: secPass,
         email: email,
+        Parent_id: Parent_id,
+        Grandparent_id: Grandparent_id
       });
+       // Update the Wallet_amount of the sponsor
+       const incrementValue = 300; // Example increment value, adjust as needed
+       Sponsor.Wallet_amount = (parseFloat(Sponsor.Wallet_amount) + incrementValue).toString();
+       await Sponsor.save();
+       
+       await Transcation.create({
+        Give_by:user.id,
+        Resive:Sponsor?.id,
+        T_name:"Direct Income",
+        amount:incrementValue
+       })
+
       const data = {
         user: {
           id: user.id,
@@ -168,8 +185,122 @@ class UserController {
       res.status(500).send("Internal Server Error");
     }
   }
-   
 
+  //CreatAdmin 
+  static async CreateAdmin(req,res){
+    try {
+    let success = false;
+    const {
+      name,
+      phoneNo,
+      fatherName,
+      city,
+      State,
+      email,
+      Upi_no,
+      Bank_Name,
+      Account_Holder_name,
+      Account_No,
+      IFSC_Code,
+      E_Pin
+    } = req.body;
+    let user = await User.findOne({ phoneNo: req.body.phoneNo });
+    if (user) {
+      return res
+        .status(400)
+        .json({ success, error: "Sorry a User are already exists" });
+    }
+    const accountSchema = Joi.object({
+      name: Joi.string().required().messages({
+        'string.empty': 'Name is required',
+        'any.required': 'Name is required'
+      }),
+      
+      phoneNo: Joi.string().required().messages({
+        'string.empty': 'Phone Number is required',
+        'any.required': 'Phone Number is required'
+      }),
+      fatherName: Joi.string().required().messages({
+        'string.empty': 'Father Name is required',
+        'any.required': 'Father Namer is required'
+      }),
+      Upi_no: Joi.string().required().messages({
+        'string.empty': 'UPI number is required',
+        'any.required': 'UPI number is required'
+      }),
+      Bank_Name: Joi.string().required().messages({
+        'string.empty': 'Bank name is required',
+        'any.required': 'Bank name is required'
+      }),
+      Account_Holder_name: Joi.string().required().messages({
+        'string.empty': 'Account holder name is required',
+        'any.required': 'Account holder name is required'
+      }),
+      Account_No: Joi.string().required().messages({
+        'string.empty': 'Account number is required',
+        'any.required': 'Account number is required'
+      }),
+      IFSC_Code: Joi.string().required().messages({
+        'string.empty': 'IFSC code is required',
+        'any.required': 'IFSC code is required'
+      }),
+      E_Pin: Joi.string().required().messages({
+        'string.empty': 'E-Pin is required',
+        'any.required': 'E-Pin is required'
+      }),
+    });
+
+    const { error } = accountSchema.validate({
+      name,
+      phoneNo,
+      fatherName,
+      Upi_no,
+      Bank_Name,
+      Account_Holder_name,
+      Account_No,
+      IFSC_Code,
+      E_Pin,
+    });
+
+    if (error) {
+      return res.status(400).json({ success, error: error.details[0].message });
+    }
+    const userId = name.slice(0, 2).toUpperCase() + phoneNo;
+
+    const salt = await bcrypt.genSalt(10);
+    const secPass = await bcrypt.hash(req.body.password, salt)
+    user = await User.create({
+      user_id: userId,
+      name: name,
+      phoneNo: phoneNo,
+      father_name: fatherName,
+      city: city,
+      State: State,
+      Sponsor_id: null,
+      Sponsor_Name:null,
+      password: secPass,
+      email: email,
+      Parent_id: null,
+      Grandparent_id: null,
+      Role:"Admin"
+    });
+
+    const data = {
+      user: {
+        id: user.id,
+      },
+    };
+    const authtoken = jwt.sign(data, JWT_SECRET);
+
+      // res.json(user);
+      success = true;
+      res.json({ success, authtoken });
+  } catch (error) {
+    console.error(error.message);
+    res.status(500).send("Internal Server Error");
+  }
+  }
+ 
   static async Login(req,res){
   try {
     let success = false;
@@ -214,6 +345,120 @@ class UserController {
     res.status(500).send("Internal Server Error")
   }
   }
+
+static async AgentCreatedByAdmin(req,res){
+  try {
+    let success = false;
+    const {
+      name,
+      phoneNo,
+      fatherName,
+      city,
+      State,
+      email,
+      Upi_no,
+      Bank_Name,
+      Account_Holder_name,
+      Account_No,
+      IFSC_Code,
+      E_Pin
+    } = req.body;
+    let user = await User.findOne({ phoneNo: req.body.phoneNo });
+    if (user) {
+      return res
+        .status(400)
+        .json({ success, error: "Sorry a User are already exists" });
+    }
+    const accountSchema = Joi.object({
+      name: Joi.string().required().messages({
+        'string.empty': 'Name is required',
+        'any.required': 'Name is required'
+      }),
+      
+      phoneNo: Joi.string().required().messages({
+        'string.empty': 'Phone Number is required',
+        'any.required': 'Phone Number is required'
+      }),
+      fatherName: Joi.string().required().messages({
+        'string.empty': 'Father Name is required',
+        'any.required': 'Father Namer is required'
+      }),
+      Upi_no: Joi.string().required().messages({
+        'string.empty': 'UPI number is required',
+        'any.required': 'UPI number is required'
+      }),
+      Bank_Name: Joi.string().required().messages({
+        'string.empty': 'Bank name is required',
+        'any.required': 'Bank name is required'
+      }),
+      Account_Holder_name: Joi.string().required().messages({
+        'string.empty': 'Account holder name is required',
+        'any.required': 'Account holder name is required'
+      }),
+      Account_No: Joi.string().required().messages({
+        'string.empty': 'Account number is required',
+        'any.required': 'Account number is required'
+      }),
+      IFSC_Code: Joi.string().required().messages({
+        'string.empty': 'IFSC code is required',
+        'any.required': 'IFSC code is required'
+      }),
+      E_Pin: Joi.string().required().messages({
+        'string.empty': 'E-Pin is required',
+        'any.required': 'E-Pin is required'
+      }),
+    });
+
+    const { error } = accountSchema.validate({
+      name,
+      phoneNo,
+      fatherName,
+      Upi_no,
+      Bank_Name,
+      Account_Holder_name,
+      Account_No,
+      IFSC_Code,
+      E_Pin,
+    });
+
+    if (error) {
+      return res.status(400).json({ success, error: error.details[0].message });
+    }
+    const userId = name.slice(0, 2).toUpperCase() + phoneNo;
+
+    const salt = await bcrypt.genSalt(10);
+    const secPass = await bcrypt.hash(req.body.password, salt)
+    user = await User.create({
+      user_id: userId,
+      name: name,
+      phoneNo: phoneNo,
+      father_name: fatherName,
+      city: city,
+      State: State,
+      Sponsor_id:"By Admin",
+      Sponsor_Name:"By Admin",
+      password: secPass,
+      email: email,
+      Parent_id: null,
+      Grandparent_id: null,
+      role:"Agent"
+    });
+
+    const data = {
+      user: {
+        id: user.id,
+      },
+    };
+    const authtoken = jwt.sign(data, JWT_SECRET);
+
+      // res.json(user);
+      success = true;
+      res.json({ success, authtoken });
+  } catch (error) {
+    console.log(error)
+  }
+}
+
   
   static async TeamLevel(req,res){
     const { userId } = req.params;

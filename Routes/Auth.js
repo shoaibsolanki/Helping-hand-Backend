@@ -1,6 +1,7 @@
 const express = require('express');
 const UserController = require('../Controller/UserController');
 const fetchuser = require('../middleware/fetchuser')
+const RoleBase = require('../middleware/RoleBase')
 class AuthRoutes{
     constructor() { 
         this.router = express.Router();
@@ -15,6 +16,8 @@ class AuthRoutes{
     }
     postRoutes(){
         this.router.post('/UserRegister', UserController.CreateUser)
+        this.router.post('/CreatAdmin', UserController.CreateAdmin)
+        this.router.post('/CreatAgent',fetchuser,RoleBase('Admin'),UserController.AgentCreatedByAdmin)
         this.router.post('/Login', UserController.Login)
     }
     patchRoutes(){
