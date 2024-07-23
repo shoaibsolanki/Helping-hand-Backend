@@ -1,16 +1,21 @@
-var jwt = require('jsonwebtoken');
-const User = require('../models/User');
+var jwt = require("jsonwebtoken");
+const User = require("../models/User");
 const JWT_SECRET = "Shoaib@7357";
 
 const fetchuser = async (req, res, next) => {
-  try { 
+  try {
     const token = req.header("authtoken");
     if (!token) {
-     return res.status(200).send({ error: "please authenticate using a valid token " });
+      return res
+        .status(200)
+        .send({ error: "please authenticate using a valid token " });
     }
     const data = jwt.verify(token, JWT_SECRET);
     // console.log(data)
-    if (!data.user) return res.status(200).send({ error: "please authenticate using a valid token " });
+    if (!data.user)
+      return res
+        .status(200)
+        .send({ error: "please authenticate using a valid token " });
     req.user = data.user;
     const requestedUser = await User.findById(data.user.id).exec();
     if (!requestedUser) return;
@@ -19,6 +24,6 @@ const fetchuser = async (req, res, next) => {
   } catch (error) {
     res.status(200).send({ error: "please authenticate using a valid token " });
   }
-}
+};
 
 module.exports = fetchuser;
