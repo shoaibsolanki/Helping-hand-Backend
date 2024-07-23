@@ -9,20 +9,20 @@ const Transcation = require("../models/Transcation");
 const getTeamHierarchy = async (sponsorId, level, result, levelCounts) => {
   const members = await User.find({ Sponsor_id: sponsorId }).exec();
   if (members.length > 0) {
-      if (!result[level]) {
-          result[level] = [];
-          levelCounts[level] = 0;
-      }
-      for (const member of members) {
-          result[level].push({
-              userId: member.user_id,
-              name: member.name,
-              Sponsor_id: member.Sponsor_id,
-              Sponsor_Name: member.Sponsor_Name
-          });
-          levelCounts[level]++;
-          await getTeamHierarchy(member.user_id, level + 1, result, levelCounts);
-      }
+    if (!result[level]) {
+      result[level] = [];
+      levelCounts[level] = 0;
+    }
+    for (const member of members) {
+      result[level].push({
+        userId: member.user_id,
+        name: member.name,
+        Sponsor_id: member.Sponsor_id,
+        Sponsor_Name: member.Sponsor_Name
+      });
+      levelCounts[level]++;
+      await getTeamHierarchy(member.user_id, level + 1, result, levelCounts);
+    }
   }
 };
 class UserController {
@@ -282,7 +282,7 @@ class UserController {
       email: email,
       Parent_id: null,
       Grandparent_id: null,
-      Role:"Admin"
+      role:"Admin"
     });
 
     const data = {
@@ -460,21 +460,23 @@ static async AgentCreatedByAdmin(req,res){
 }
 
   
-  static async TeamLevel(req,res){
-    const { userId } = req.params;
-    try {
-      const rootUser = await User.findOne({ user_id:userId }).exec();
-      if (!rootUser) {
-          return res.status(404).json({ message: 'User not found' });
-      }
+static async TeamLevel(req, res) {
+  const { userId } = req.params;
+  try {
+    const rootUser = await User.findOne({ user_id: userId }).exec();
+    if (!rootUser) {
+      return res.status(404).json({ message: 'User not found' });
+    }
 
-      let result = {};
-      await getTeamHierarchy(rootUser.user_id, 1, result);
-      res.json({ user: rootUser, team: result });
+    let result = {};
+    let levelCounts = {};
+    await getTeamHierarchy(rootUser.user_id, 1, result, levelCounts);
+    res.json({ user: rootUser, team: result, levelCounts });
   } catch (err) {
-      res.status(500).json({ error: err.message });
+    res.status(500).json({ error: err.message });
   }
-  }
+}
+
 
 }
 module.exports = UserController;
