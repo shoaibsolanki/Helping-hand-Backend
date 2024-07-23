@@ -17,7 +17,7 @@ const database ='HelpingHande';
 const connectToMongo = async () => {
     try{ 
         mongoose.set("strictQuery", false);
-        await mongoose.connect(`mongodb+srv://shoaibsolanki73:B7yKSn2IHvqTQFRX@cluster0.hxvo9uz.mongodb.net/Heplinghands`);
+        await mongoose.connect(`mongodb+srv://shoaibsolanki73:B7yKSn2IHvqTQFRX@cluster0.hxvo9uz.mongodb.net/Heplinghands?retryWrites=true&w=majority`);
         // await mongoose.connect(`mongodb://${server}/${database}`);
         console.log("connected to mongo succesfully");
     } catch (err){
