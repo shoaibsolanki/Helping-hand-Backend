@@ -282,7 +282,7 @@ class UserController {
       email: email,
       Parent_id: null,
       Grandparent_id: null,
-      Role:"Admin"
+      role:"Admin"
     });
 
     const data = {
