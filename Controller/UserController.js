@@ -414,8 +414,8 @@ static async AgentCreatedByAdmin(req,res){
         'any.required': 'IFSC code is required'
       }),
       Upi_Id: Joi.string().required().messages({
-        'string.empty': 'E-Pin is required',
-        'any.required': 'E-Pin is required'
+        'string.empty': 'Upi_Id is required',
+        'any.required': 'Upi_Id is required'
       }),
     });
 
@@ -436,8 +436,8 @@ static async AgentCreatedByAdmin(req,res){
     }
     const userId = name.slice(0, 2).toUpperCase() + phoneNo;
 
-    const salt = await bcrypt.genSalt(10);
-    const secPass = await bcrypt.hash(req.body.password, salt)
+    // const salt = await bcrypt.genSalt(10);
+    // const secPass = await bcrypt.hash(req.body.password, salt)
     user = await User.create({
       user_id: userId,
       name: name,
@@ -447,23 +447,38 @@ static async AgentCreatedByAdmin(req,res){
       State: State,
       Sponsor_id:"By Admin",
       Sponsor_Name:"By Admin",
-      password: secPass,
+      password: req.body.password,
       email: email,
       Parent_id: null,
       Grandparent_id: null,
-      role:"Agent"
+      role:"Agent",
+      level:"10"
     });
 
-    const data = {
-      user: {
-        id: user.id,
-      },
-    };
-    const authtoken = jwt.sign(data, JWT_SECRET);
+    await Account.create({
+      userid:user.id,
+      Upi_no:Upi_no,
+      Bank_Name:Bank_Name,
+      Account_Holder_name:Account_Holder_name,
+      Account_No:Account_No,
+      IFSC_Code:IFSC_Code,
+      Upi_Id:Upi_Id
+    })
+
+    const data ={
+      user_id:userId,
+      password:req.body.password
+    }
+    // const data = {
+    //   user: {
+    //     id: user.id,
+    //   },
+    // };
+    // const authtoken = jwt.sign(data, JWT_SECRET);
 
       // res.json(user);
       success = true;
-      res.json({ success, authtoken });
+      res.json({ success, data});
   } catch (error) {
     console.log(error)
     res.status(500).send("Internal Server Error")

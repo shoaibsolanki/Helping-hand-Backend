@@ -70,7 +70,8 @@ const UserSchema = new Schema({
     },
     level:{
         type:String,
-        default:'1'
+        default:'1',
+        enum :['1','2','3','4','5','6','7','8','9','10']
     }
     // otp:{
     //     type:String
