@@ -42,7 +42,7 @@ class UserController {
         Account_Holder_name,
         Account_No,
         IFSC_Code,
-        E_Pin
+        Upi_Id
       } = req.body;
       let Sponsor = await User.findOne({ user_id: Sponsor_id });
       // console.log(Sponsor)
@@ -102,9 +102,9 @@ class UserController {
           'string.empty': 'IFSC code is required',
           'any.required': 'IFSC code is required'
         }),
-        E_Pin: Joi.string().required().messages({
-          'string.empty': 'E-Pin is required',
-          'any.required': 'E-Pin is required'
+        Upi_Id: Joi.string().required().messages({
+          'string.empty': 'Upi_Id is required',
+          'any.required': 'Upi_Id is required'
         }),
       });
   
@@ -118,7 +118,7 @@ class UserController {
         Account_Holder_name,
         Account_No,
         IFSC_Code,
-        E_Pin,
+        Upi_Id,
       });
   
       if (error) {
@@ -167,12 +167,13 @@ class UserController {
       };
 
       await Account.create({
+        userid:user.id,
         Upi_no:Upi_no,
         Bank_Name:Bank_Name,
         Account_Holder_name:Account_Holder_name,
         Account_No:Account_No,
         IFSC_Code:IFSC_Code,
-        E_Pin:E_Pin
+        Upi_Id:Upi_Id
       })
       const authtoken = jwt.sign(data, JWT_SECRET);
 
@@ -202,7 +203,7 @@ class UserController {
       Account_Holder_name,
       Account_No,
       IFSC_Code,
-      E_Pin
+      Upi_Id
     } = req.body;
     let user = await User.findOne({ phoneNo: req.body.phoneNo });
     if (user) {
@@ -244,7 +245,7 @@ class UserController {
         'string.empty': 'IFSC code is required',
         'any.required': 'IFSC code is required'
       }),
-      E_Pin: Joi.string().required().messages({
+      Upi_Id: Joi.string().required().messages({
         'string.empty': 'E-Pin is required',
         'any.required': 'E-Pin is required'
       }),
@@ -259,7 +260,7 @@ class UserController {
       Account_Holder_name,
       Account_No,
       IFSC_Code,
-      E_Pin,
+      Upi_Id,
     });
 
     if (error) {
@@ -361,7 +362,7 @@ static async AgentCreatedByAdmin(req,res){
       Account_Holder_name,
       Account_No,
       IFSC_Code,
-      E_Pin
+      Upi_Id
     } = req.body;
     let user = await User.findOne({ phoneNo: req.body.phoneNo });
     if (user) {
@@ -403,7 +404,7 @@ static async AgentCreatedByAdmin(req,res){
         'string.empty': 'IFSC code is required',
         'any.required': 'IFSC code is required'
       }),
-      E_Pin: Joi.string().required().messages({
+      Upi_Id: Joi.string().required().messages({
         'string.empty': 'E-Pin is required',
         'any.required': 'E-Pin is required'
       }),
@@ -418,7 +419,7 @@ static async AgentCreatedByAdmin(req,res){
       Account_Holder_name,
       Account_No,
       IFSC_Code,
-      E_Pin,
+      Upi_Id,
     });
 
     if (error) {
