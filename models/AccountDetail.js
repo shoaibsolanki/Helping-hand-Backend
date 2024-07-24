@@ -2,6 +2,11 @@ const mongoose = require("mongoose");
 const { Schema } = mongoose;
 
 const AccountDetail = new Schema({
+  userid:{
+    type: mongoose.Schema.Types.ObjectId,
+    required: true,
+    ref: "User",
+  },
   Upi_no: {
     type: String,
     require: true,
@@ -22,7 +27,7 @@ const AccountDetail = new Schema({
    type: String,
    require:true
   },
-  E_Pin :{
+  Upi_Id :{
     type: String,
     require: true
   }

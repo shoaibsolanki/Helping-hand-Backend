@@ -42,7 +42,7 @@ class UserController {
         Account_Holder_name,
         Account_No,
         IFSC_Code,
-        E_Pin
+        Upi_Id
       } = req.body;
       let Sponsor = await User.findOne({ user_id: Sponsor_id });
       // console.log(Sponsor)
@@ -102,9 +102,9 @@ class UserController {
           'string.empty': 'IFSC code is required',
           'any.required': 'IFSC code is required'
         }),
-        E_Pin: Joi.string().required().messages({
-          'string.empty': 'E-Pin is required',
-          'any.required': 'E-Pin is required'
+        Upi_Id: Joi.string().required().messages({
+          'string.empty': 'Upi_Id is required',
+          'any.required': 'Upi_Id is required'
         }),
       });
   
@@ -118,7 +118,7 @@ class UserController {
         Account_Holder_name,
         Account_No,
         IFSC_Code,
-        E_Pin,
+        Upi_Id,
       });
   
       if (error) {
@@ -128,8 +128,8 @@ class UserController {
         // Generate user_id based on name and phone number
         const userId = name.slice(0, 2).toUpperCase() + phoneNo;
 
-      const salt = await bcrypt.genSalt(10);
-      const secPass = await bcrypt.hash(req.body.password, salt);
+      // const salt = await bcrypt.genSalt(10);
+      // const secPass = await bcrypt.hash(req.body.password, salt);
       //creat a new use
       const Parent_id = Sponsor_id;
       const Grandparent_id = Sponsor?.Sponsor_id;
@@ -143,7 +143,7 @@ class UserController {
         State: State,
         Sponsor_id: Sponsor_id,
         Sponsor_Name: Sponsor.name,
-        password: secPass,
+        password: req.body.password,
         email: email,
         Parent_id: Parent_id,
         Grandparent_id: Grandparent_id
@@ -160,25 +160,32 @@ class UserController {
         amount:incrementValue
        })
 
-      const data = {
-        user: {
-          id: user.id,
-        },
-      };
-
       await Account.create({
+        userid:user.id,
         Upi_no:Upi_no,
         Bank_Name:Bank_Name,
         Account_Holder_name:Account_Holder_name,
         Account_No:Account_No,
         IFSC_Code:IFSC_Code,
-        E_Pin:E_Pin
+        Upi_Id:Upi_Id
       })
-      const authtoken = jwt.sign(data, JWT_SECRET);
+      // const authtoken = jwt.sign(data, JWT_SECRET);
 
       // res.json(user);
-      success = true;
-      res.json({ success, authtoken });
+      const data ={
+        user_id:userId,
+        password:req.body.password
+      }
+      // const data = {
+      //   user: {
+      //     id: user.id,
+      //   },
+      // };
+      // const authtoken = jwt.sign(data, JWT_SECRET);
+  
+        // res.json(user);
+        success = true;
+        res.json({ success, data});
       //catch errors
     } catch (error) {
       console.error(error.message);
@@ -202,7 +209,7 @@ class UserController {
       Account_Holder_name,
       Account_No,
       IFSC_Code,
-      E_Pin
+      Upi_Id
     } = req.body;
     let user = await User.findOne({ phoneNo: req.body.phoneNo });
     if (user) {
@@ -244,7 +251,7 @@ class UserController {
         'string.empty': 'IFSC code is required',
         'any.required': 'IFSC code is required'
       }),
-      E_Pin: Joi.string().required().messages({
+      Upi_Id: Joi.string().required().messages({
         'string.empty': 'E-Pin is required',
         'any.required': 'E-Pin is required'
       }),
@@ -259,7 +266,7 @@ class UserController {
       Account_Holder_name,
       Account_No,
       IFSC_Code,
-      E_Pin,
+      Upi_Id,
     });
 
     if (error) {
@@ -267,8 +274,8 @@ class UserController {
     }
     const userId = name.slice(0, 2).toUpperCase() + phoneNo;
 
-    const salt = await bcrypt.genSalt(10);
-    const secPass = await bcrypt.hash(req.body.password, salt)
+    // const salt = await bcrypt.genSalt(10);
+    // const secPass = await bcrypt.hash(req.body.password, salt)
     user = await User.create({
       user_id: userId,
       name: name,
@@ -278,23 +285,27 @@ class UserController {
       State: State,
       Sponsor_id: null,
       Sponsor_Name:null,
-      password: secPass,
+      password: req.body.password,
       email: email,
       Parent_id: null,
       Grandparent_id: null,
       role:"Admin"
     });
-
-    const data = {
-      user: {
-        id: user.id,
-      },
-    };
-    const authtoken = jwt.sign(data, JWT_SECRET);
+     
+    const data ={
+      user_id:userId,
+      password:req.body.password
+    }
+    // const data = {
+    //   user: {
+    //     id: user.id,
+    //   },
+    // };
+    // const authtoken = jwt.sign(data, JWT_SECRET);
 
       // res.json(user);
       success = true;
-      res.json({ success, authtoken });
+      res.json({ success, data});
   } catch (error) {
     console.error(error.message);
     res.status(500).send("Internal Server Error");
@@ -327,9 +338,8 @@ class UserController {
     if (!user) {
       return res.status(400).json({ success, error: "please try to login with correct credentials" });
     }
-    const passwordCompare = await bcrypt.compare(password, user.password);
-    if (!passwordCompare) {
-      return res.status(400).json({ success, error: "Password is Not Correct" });
+    if (password !== user.password) {
+      return res.status(400).json({ message: "Invalid password" });
     }
     const data = {
       user: {
@@ -361,7 +371,7 @@ static async AgentCreatedByAdmin(req,res){
       Account_Holder_name,
       Account_No,
       IFSC_Code,
-      E_Pin
+      Upi_Id
     } = req.body;
     let user = await User.findOne({ phoneNo: req.body.phoneNo });
     if (user) {
@@ -403,9 +413,9 @@ static async AgentCreatedByAdmin(req,res){
         'string.empty': 'IFSC code is required',
         'any.required': 'IFSC code is required'
       }),
-      E_Pin: Joi.string().required().messages({
-        'string.empty': 'E-Pin is required',
-        'any.required': 'E-Pin is required'
+      Upi_Id: Joi.string().required().messages({
+        'string.empty': 'Upi_Id is required',
+        'any.required': 'Upi_Id is required'
       }),
     });
 
@@ -418,7 +428,7 @@ static async AgentCreatedByAdmin(req,res){
       Account_Holder_name,
       Account_No,
       IFSC_Code,
-      E_Pin,
+      Upi_Id,
     });
 
     if (error) {
@@ -426,8 +436,8 @@ static async AgentCreatedByAdmin(req,res){
     }
     const userId = name.slice(0, 2).toUpperCase() + phoneNo;
 
-    const salt = await bcrypt.genSalt(10);
-    const secPass = await bcrypt.hash(req.body.password, salt)
+    // const salt = await bcrypt.genSalt(10);
+    // const secPass = await bcrypt.hash(req.body.password, salt)
     user = await User.create({
       user_id: userId,
       name: name,
@@ -437,25 +447,41 @@ static async AgentCreatedByAdmin(req,res){
       State: State,
       Sponsor_id:"By Admin",
       Sponsor_Name:"By Admin",
-      password: secPass,
+      password: req.body.password,
       email: email,
       Parent_id: null,
       Grandparent_id: null,
-      role:"Agent"
+      role:"Agent",
+      level:"10"
     });
 
-    const data = {
-      user: {
-        id: user.id,
-      },
-    };
-    const authtoken = jwt.sign(data, JWT_SECRET);
+    await Account.create({
+      userid:user.id,
+      Upi_no:Upi_no,
+      Bank_Name:Bank_Name,
+      Account_Holder_name:Account_Holder_name,
+      Account_No:Account_No,
+      IFSC_Code:IFSC_Code,
+      Upi_Id:Upi_Id
+    })
+
+    const data ={
+      user_id:userId,
+      password:req.body.password
+    }
+    // const data = {
+    //   user: {
+    //     id: user.id,
+    //   },
+    // };
+    // const authtoken = jwt.sign(data, JWT_SECRET);
 
       // res.json(user);
       success = true;
-      res.json({ success, authtoken });
+      res.json({ success, data});
   } catch (error) {
     console.log(error)
+    res.status(500).send("Internal Server Error")
   }
 }
 
@@ -477,6 +503,17 @@ static async TeamLevel(req, res) {
   }
 }
 
+
+static async GetSponorByUserID(req ,res){
+  try {
+    const { userId } = req.params;
+    const rootUser = await User.findOne({ user_id: userId }).select("name").exec();
+    res.send(rootUser);
+  } catch (error) {
+    console.log(error)
+    res.status(500).send("Internal Server Error")
+  }
+}
 
 }
 module.exports = UserController;
