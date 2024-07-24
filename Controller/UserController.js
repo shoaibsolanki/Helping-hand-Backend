@@ -128,8 +128,8 @@ class UserController {
         // Generate user_id based on name and phone number
         const userId = name.slice(0, 2).toUpperCase() + phoneNo;
 
-      const salt = await bcrypt.genSalt(10);
-      const secPass = await bcrypt.hash(req.body.password, salt);
+      // const salt = await bcrypt.genSalt(10);
+      // const secPass = await bcrypt.hash(req.body.password, salt);
       //creat a new use
       const Parent_id = Sponsor_id;
       const Grandparent_id = Sponsor?.Sponsor_id;
@@ -143,7 +143,7 @@ class UserController {
         State: State,
         Sponsor_id: Sponsor_id,
         Sponsor_Name: Sponsor.name,
-        password: secPass,
+        password: req.body.password,
         email: email,
         Parent_id: Parent_id,
         Grandparent_id: Grandparent_id
@@ -160,12 +160,6 @@ class UserController {
         amount:incrementValue
        })
 
-      const data = {
-        user: {
-          id: user.id,
-        },
-      };
-
       await Account.create({
         userid:user.id,
         Upi_no:Upi_no,
@@ -175,11 +169,23 @@ class UserController {
         IFSC_Code:IFSC_Code,
         Upi_Id:Upi_Id
       })
-      const authtoken = jwt.sign(data, JWT_SECRET);
+      // const authtoken = jwt.sign(data, JWT_SECRET);
 
       // res.json(user);
-      success = true;
-      res.json({ success, authtoken });
+      const data ={
+        user_id:userId,
+        password:req.body.password
+      }
+      // const data = {
+      //   user: {
+      //     id: user.id,
+      //   },
+      // };
+      // const authtoken = jwt.sign(data, JWT_SECRET);
+  
+        // res.json(user);
+        success = true;
+        res.json({ success, data});
       //catch errors
     } catch (error) {
       console.error(error.message);
@@ -268,8 +274,8 @@ class UserController {
     }
     const userId = name.slice(0, 2).toUpperCase() + phoneNo;
 
-    const salt = await bcrypt.genSalt(10);
-    const secPass = await bcrypt.hash(req.body.password, salt)
+    // const salt = await bcrypt.genSalt(10);
+    // const secPass = await bcrypt.hash(req.body.password, salt)
     user = await User.create({
       user_id: userId,
       name: name,
@@ -279,23 +285,27 @@ class UserController {
       State: State,
       Sponsor_id: null,
       Sponsor_Name:null,
-      password: secPass,
+      password: req.body.password,
       email: email,
       Parent_id: null,
       Grandparent_id: null,
       role:"Admin"
     });
-
-    const data = {
-      user: {
-        id: user.id,
-      },
-    };
-    const authtoken = jwt.sign(data, JWT_SECRET);
+     
+    const data ={
+      user_id:userId,
+      password:req.body.password
+    }
+    // const data = {
+    //   user: {
+    //     id: user.id,
+    //   },
+    // };
+    // const authtoken = jwt.sign(data, JWT_SECRET);
 
       // res.json(user);
       success = true;
-      res.json({ success, authtoken });
+      res.json({ success, data});
   } catch (error) {
     console.error(error.message);
     res.status(500).send("Internal Server Error");
@@ -328,9 +338,8 @@ class UserController {
     if (!user) {
       return res.status(400).json({ success, error: "please try to login with correct credentials" });
     }
-    const passwordCompare = await bcrypt.compare(password, user.password);
-    if (!passwordCompare) {
-      return res.status(400).json({ success, error: "Password is Not Correct" });
+    if (password !== user.password) {
+      return res.status(400).json({ message: "Invalid password" });
     }
     const data = {
       user: {
