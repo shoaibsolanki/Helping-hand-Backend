@@ -456,6 +456,7 @@ static async AgentCreatedByAdmin(req,res){
       res.json({ success, authtoken });
   } catch (error) {
     console.log(error)
+    res.status(500).send("Internal Server Error")
   }
 }
 
@@ -477,6 +478,17 @@ static async TeamLevel(req, res) {
   }
 }
 
+
+static async GetSponorByUserID(req ,res){
+  try {
+    const { userId } = req.params;
+    const rootUser = await User.findOne({ user_id: userId }).select("name").exec();
+    res.send(rootUser);
+  } catch (error) {
+    console.log(error)
+    res.status(500).send("Internal Server Error")
+  }
+}
 
 }
 module.exports = UserController;

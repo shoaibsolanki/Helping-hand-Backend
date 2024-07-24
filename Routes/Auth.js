@@ -13,6 +13,7 @@ class AuthRoutes{
      
     getRoutes(){
       this.router.get('/getmylevel/:userId',fetchuser, UserController.TeamLevel)
+      this.router.get('/GetSponsor/:userId', UserController.GetSponorByUserID)
     }
     postRoutes(){
         this.router.post('/UserRegister', UserController.CreateUser)
